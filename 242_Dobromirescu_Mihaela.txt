@@ -1,0 +1,753 @@
+﻿–Cerinta 4
+
+
+–Secvente
+
+
+BEGIN
+    FOR seq IN (SELECT sequence_name FROM user_sequences) LOOP
+        EXECUTE IMMEDIATE 'DROP SEQUENCE ' || seq.sequence_name;
+        DBMS_OUTPUT.PUT_LINE('Sequence ' || seq.sequence_name || ' dropped.');
+    END LOOP;
+END;
+/
+
+
+CREATE SEQUENCE seq_carte_id
+START WITH 1
+INCREMENT BY 1
+MINVALUE 1
+MAXVALUE 99
+NOCYCLE;
+
+
+CREATE SEQUENCE seq_autor_id
+START WITH 100
+INCREMENT BY 1
+MINVALUE 100
+MAXVALUE 999
+NOCYCLE;
+
+
+CREATE SEQUENCE seq_cat_id
+START WITH 1000
+INCREMENT BY 1
+MINVALUE 1000
+MAXVALUE 1200
+NOCYCLE;
+
+
+CREATE SEQUENCE seq_client_id
+START WITH 2000
+INCREMENT BY 1
+MINVALUE 2000
+MAXVALUE 2500
+NOCYCLE;
+
+
+CREATE SEQUENCE seq_adresa_id
+START WITH 3000
+INCREMENT BY 1
+MINVALUE 3000
+MAXVALUE 3500
+NOCYCLE;
+
+
+CREATE SEQUENCE seq_editura_id
+START WITH 1500
+INCREMENT BY 1
+MINVALUE 1500
+MAXVALUE 1600
+NOCYCLE;
+
+
+CREATE SEQUENCE seq_comanda_id
+START WITH 6000
+INCREMENT BY 1
+MINVALUE 6000
+MAXVALUE 7000
+NOCYCLE;
+
+
+
+–Creare Tabele
+
+
+
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE autor_scrie_carti CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE comanda_contine_carti CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Articol CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Comenzi CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Carti CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Editura CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Adresa CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Clienti CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Categorie CASCADE CONSTRAINTS';
+    EXECUTE IMMEDIATE 'DROP TABLE Autor CASCADE CONSTRAINTS';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -942 THEN 
+            RAISE;
+        END IF;
+END;
+/
+
+
+
+
+CREATE TABLE Autor (
+    id_autor INT PRIMARY KEY,
+    prenume_autor VARCHAR2(50) NOT NULL,
+    nume_autor VARCHAR2(50) NOT NULL
+);
+
+
+CREATE TABLE Categorie (
+    id_cat INT PRIMARY KEY,
+    nume_categorie VARCHAR2(50) NOT NULL,
+    descriere VARCHAR2(255) NOT NULL
+);
+
+
+CREATE TABLE Clienti (
+    id_client INT PRIMARY KEY,
+    nume_client VARCHAR2(100) NOT NULL,
+    prenume_client VARCHAR2(100) NOT NULL,
+    email_client VARCHAR2(255) UNIQUE NOT NULL,
+    telefon_client VARCHAR2(10) NOT NULL
+);
+
+
+CREATE TABLE Adresa (
+    id_adresa INT PRIMARY KEY,
+    adresa VARCHAR2(255) NOT NULL,
+    oras VARCHAR2(100) NOT NULL,
+    judet VARCHAR2(100) NOT NULL,
+    cod_postal VARCHAR2(10) NOT NULL,
+    tara VARCHAR2(100) NOT NULL
+);
+
+
+CREATE TABLE Editura (
+    id_editura INT PRIMARY KEY,
+    nume_editura VARCHAR2(255) NOT NULL
+);
+
+
+CREATE TABLE Carti (
+    id_carte INT PRIMARY KEY, 
+    titlu VARCHAR2(255) NOT NULL, 
+    limba VARCHAR2(50) NOT NULL, 
+    nr_pagini INT NOT NULL, 
+    descriere VARCHAR2(255) NOT NULL, 
+    data_publicarii DATE NOT NULL,
+    id_editura INT,
+    id_cat INT,
+    FOREIGN KEY (id_editura) REFERENCES Editura(id_editura), 
+    FOREIGN KEY (id_cat) REFERENCES Categorie(id_cat)
+);
+
+
+CREATE TABLE Comenzi (
+    id_comanda INT PRIMARY KEY,
+    data_comenzii DATE NOT NULL,
+    id_client INT,
+    id_adresa INT,
+    FOREIGN KEY (id_client) REFERENCES Clienti(id_client),
+    FOREIGN KEY (id_adresa) REFERENCES Adresa(id_adresa)
+);
+
+
+
+CREATE TABLE autor_scrie_carti (
+    id_carte INT,
+    id_autor INT,
+    PRIMARY KEY (id_carte, id_autor),
+    FOREIGN KEY (id_carte) REFERENCES Carti(id_carte),
+    FOREIGN KEY (id_autor) REFERENCES Autor(id_autor)
+);
+
+CREATE TABLE comanda_contine_carti (
+     id_carte INT,
+     id_comanda INT,
+     pret DECIMAL(10,2),
+     PRIMARY KEY (id_carte, id_comanda),
+     FOREIGN KEY (id_carte) REFERENCES Carti(id_carte)
+     FOREIGN KEY (id_comanda) REFERENCES Comenzi(id_comanda)
+
+);
+
+
+
+
+
+–Cerinta 5
+
+
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Rebreanu', 'Liviu');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Blaga', 'Lucian');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Wilde', 'Oscar');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Austen', 'Jane');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Sipser', 'Michael');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Rose', 'Keith');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Kurose', 'James');
+INSERT INTO Autor (id_autor, nume_autor, prenume_autor) VALUES
+(seq_autor_id.NEXTVAL, 'Forta', 'Ben');
+
+
+select * from autor;
+
+
+INSERT INTO Categorie (id_cat, nume_categorie, descriere) VALUES
+(seq_cat_id.NEXTVAL, 'Fictiune', 'Descopera lumi imaginare si povesti captivante care trezesc emotii si stimuleaza imaginatia, de la romane epice la povestiri fascinante.');
+INSERT INTO Categorie (id_cat, nume_categorie, descriere) VALUES
+(seq_cat_id.NEXTVAL, 'Non-Fictiune', 'Carti care reflecta realitatea prin documentare detaliate, biografii inspiratoare si eseuri care provoaca gandirea, oferind o perspectiva asupra lumii.');
+INSERT INTO Categorie (id_cat, nume_categorie, descriere) VALUES
+(seq_cat_id.NEXTVAL, 'Romantism', 'Povesti de dragoste pline de pasiune si emotie, unde inima este ghidul, iar relatiile se dezvolta in moduri surprinzatoare.');
+INSERT INTO Categorie (id_cat, nume_categorie, descriere) VALUES
+(seq_cat_id.NEXTVAL, 'Roman Psihologic', 'Carti care exploreaza psihologia personajelor, conflicte interioare si stari emotionale complexe.');
+INSERT INTO Categorie (id_cat, nume_categorie, descriere) VALUES
+(seq_cat_id.NEXTVAL, 'Poezie', 'O colectie de versuri care exprima emotii profunde, ganduri si imagini prin limbajul liric, aducand frumusete si introspectie.');
+INSERT INTO Categorie (id_cat, nume_categorie, descriere) VALUES
+(seq_cat_id.NEXTVAL, 'Stiinta', 'Categoria care cuprinde lucrari si studii despre fenomene naturale, legi ale universului si aplicatii tehnologice, acoperind domenii precum informatica, fizica si matematica.');
+
+
+select * from categorie;
+
+
+INSERT INTO Clienti (id_client, nume_client, prenume_client, email_client, telefon_client) VALUES
+(seq_client_id.NEXTVAL, 'Mihailescu', 'Andreea', 'mihailescu12@gmail.com', '0757098190');
+INSERT INTO Clienti (id_client, nume_client, prenume_client, email_client, telefon_client) VALUES
+(seq_client_id.NEXTVAL, 'Marinescu', 'Alina', 'marinescualina@gmail.com', '0745111732');
+INSERT INTO Clienti (id_client, nume_client, prenume_client, email_client, telefon_client) VALUES
+(seq_client_id.NEXTVAL, 'Barbu', 'Adrian', 'adrianbarbu@yahoo.com', '0744007443');
+INSERT INTO Clienti (id_client, nume_client, prenume_client, email_client, telefon_client) VALUES
+(seq_client_id.NEXTVAL, 'Stefan', 'Oana', 'oana.stefan@outlook.com', '0740296785');
+INSERT INTO Clienti (id_client, nume_client, prenume_client, email_client, telefon_client) VALUES
+(seq_client_id.NEXTVAL, 'Nistor', 'Roxana', 'roxana_nistor@gmail.com', '0746237812');
+INSERT INTO Clienti (id_client, nume_client, prenume_client, email_client, telefon_client) VALUES
+(seq_client_id.NEXTVAL, 'Lungu', 'Vlad', 'vladlungu@gmail.com', '0757396155');
+
+
+select * from clienti;
+
+
+
+
+INSERT INTO Adresa (id_adresa, adresa, oras, judet, cod_postal, tara) VALUES
+(seq_adresa_id.NEXTVAL, 'Strada Ion Creanga, nr 11', 'Râmnicu Vâlcea', 'Vâlcea', '240001', 'România');
+INSERT INTO Adresa (id_adresa, adresa, oras, judet, cod_postal, tara) VALUES
+(seq_adresa_id.NEXTVAL, 'Strada Aurel Vlaicu, nr 10', 'Bucure?ti', 'Bucure?ti', '010202', 'România');
+INSERT INTO Adresa (id_adresa, adresa, oras, judet, cod_postal, tara) VALUES
+(seq_adresa_id.NEXTVAL, 'Strada Calea Mosilor, nr 45', 'Bucure?ti', 'Bucure?ti', '020303', 'România');
+INSERT INTO Adresa (id_adresa, adresa, oras, judet, cod_postal, tara) VALUES
+(seq_adresa_id.NEXTVAL, 'Strada Tomis, nr 7', 'Constan?a', 'Constan?a', '900003', 'România');
+INSERT INTO Adresa (id_adresa, adresa, oras, judet, cod_postal, tara) VALUES
+(seq_adresa_id.NEXTVAL, 'Strada Grivita, nr 12', 'Tulcea', 'Tulcea', '820001', 'România');
+INSERT INTO Adresa (id_adresa, adresa, oras, judet, cod_postal, tara) VALUES
+(seq_adresa_id.NEXTVAL, 'Strada Spitalului, nr 25', 'Tulcea', 'Tulcea', '820063', 'România');
+
+
+select * from adresa;
+
+
+INSERT INTO Editura (id_editura, nume_editura) VALUES
+(seq_editura_id.NEXTVAL, 'Humanitas');
+INSERT INTO Editura (id_editura, nume_editura) VALUES
+(seq_editura_id.NEXTVAL, 'Polirom');
+INSERT INTO Editura (id_editura, nume_editura) VALUES
+(seq_editura_id.NEXTVAL, 'RAO');
+INSERT INTO Editura (id_editura, nume_editura) VALUES
+(seq_editura_id.NEXTVAL, 'Litera');
+INSERT INTO Editura (id_editura, nume_editura) VALUES
+(seq_editura_id.NEXTVAL, 'Nemira');
+
+
+select * from editura;
+
+
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Ion', 'Romana', 500, 'Un roman realist despre viata taranilor romani.', TO_DATE('1920-06-01', 'YYYY-MM-DD'), 1501, 1003);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Padurea Spanzuratilor', 'Romana', 400, 'Un roman despre tragedia razboiului si sacrificiile umane.', TO_DATE('1922-02-01', 'YYYY-MM-DD'), 1504, 1003);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Pride and Prejudice', 'Engleza', 279, 'Un roman clasic despre iubire si prejudecati sociale.', TO_DATE('1813-01-28', 'YYYY-MM-DD'), 1500, 1002);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Emma', 'Engleza', 448, 'Un roman despre viata si dragostea unei tinere in societatea engleza.', TO_DATE('1815-12-23', 'YYYY-MM-DD'), 1501, 1002);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Portretul lui Dorian Gray', 'Engleza', 254, 'Un roman gotic despre dorinta de tinerete vesnica si decadenta morala.', TO_DATE('1890-07-20', 'YYYY-MM-DD'), 1503, 1000);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Poemele Luminii', 'Romana', 120, 'O colectie de poezii care exploreaza teme filosofice.', TO_DATE('1919-01-01', 'YYYY-MM-DD'), 1503, 1004);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'SQL in 10 Minutes, Sams Teach Yourself', 'Engleza', 200, 'Un ghid concis pentru invatarea SQL, acoperind concepte de baza si avansate.', TO_DATE('2000-03-15', 'YYYY-MM-DD'), 1502, 1005);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Introduction to the Theory of Computation', 'Engleza', 500, 'O introducere completa in teoria calculului, inclusiv limbaje formale si complexitate.', TO_DATE('1997-09-01', 'YYYY-MM-DD'), 1501, 1005);
+INSERT INTO Carti (id_carte, titlu, limba, nr_pagini, descriere, data_publicarii, id_editura, id_cat)
+VALUES (seq_carte_id.NEXTVAL, 'Computer Networking: A Top-Down Approach', 'Engleza', 700, 'Un ghid detaliat despre retele de calculatoare', TO_DATE('2018-01-10', 'YYYY-MM-DD'), 1504, 1005);
+
+
+
+
+select * from carti;
+
+
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-01-15', 'YYYY-MM-DD'), 2003, 3002);
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-02-20', 'YYYY-MM-DD'), 2001, 3001);
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-03-25', 'YYYY-MM-DD'), 2005, 3005);
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-04-30', 'YYYY-MM-DD'), 2000, 3003);
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-05-10', 'YYYY-MM-DD'), 2002, 3004);
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-06-12', 'YYYY-MM-DD'), 2003, 3000);
+INSERT INTO Comenzi (id_comanda, data_comenzii, id_client, id_adresa) 
+VALUES (seq_comanda_id.NEXTVAL, TO_DATE('2024-07-22', 'YYYY-MM-DD'), 2003, 3001);
+
+
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (1, 6000, 55.00); 
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (2, 6001, 60.00); 
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (3, 6003, 75.00); 
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (4, 6006, 70.00);
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (5, 6001, 45.00); 
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (6, 6002, 40.00); 
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (7, 6004, 85.00); 
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (8, 6005, 110.00);
+INSERT INTO comanda_contine_carti (id_carte, id_comanda, pret) 
+VALUES (9, 6006, 95.00); 
+
+
+
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (1, 100);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (2, 100);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (3, 103);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (4, 104);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (5, 102);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (6, 101);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (7, 107);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (8, 104);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (9, 105);
+INSERT INTO autor_scrie_carti (id_carte, id_autor) 
+VALUES (9, 106);
+
+
+select * from autor_scrie_carti;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+–Cerinta 6
+
+
+
+
+SET SERVEROUTPUT ON;
+
+-- definirea tipurilor de colectii
+CREATE OR REPLACE TYPE LISTA_CARTI AS TABLE OF VARCHAR2(100);
+/
+
+CREATE OR REPLACE TYPE total_comenzi AS TABLE OF NUMBER;
+/
+CREATE OR REPLACE TYPE lista_edituri AS TABLE OF VARCHAR2(100);
+/
+
+CREATE OR REPLACE PROCEDURE analiza_comenzi_client(
+    p_nume_client IN VARCHAR2
+) AS
+    v_id_client Clienti.id_client%TYPE;
+    v_nr_comenzi NUMBER;
+    
+    --  varray pentru lista cartilor comandate
+    v_carti lista_carti := lista_carti();
+    
+    --  associative array pentru totalul comenzilor
+    TYPE mapare_comenzi IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    v_total_comenzi mapare_comenzi;
+    
+    --  nested table pentru editurile de la care s-au comandat cărți
+    v_edituri lista_edituri := lista_edituri();
+
+BEGIN
+    -- preluam ID-ul clientului dupa nume
+    SELECT id_client INTO v_id_client
+    FROM Clienti
+    WHERE nume_client = p_nume_client;
+    
+    -- verificam daca clientul are comenzi plasate
+    SELECT COUNT(*) INTO v_nr_comenzi
+    FROM Comenzi
+    WHERE id_client = v_id_client;
+    
+    IF v_nr_comenzi = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('Clientul ' || p_nume_client || ' nu a plasat nicio comanda.');
+        RETURN;
+    END IF;
+    
+    -- colectam cartile comandate intr-o varray
+    SELECT DISTINCT c.titlu BULK COLLECT INTO v_carti
+    FROM Carti c
+    JOIN comanda_contine_carti cc ON c.id_carte = cc.id_carte
+    JOIN Comenzi co ON cc.id_comanda = co.id_comanda
+    WHERE co.id_client = v_id_client;
+    
+    -- colectam totalul comenzilor in associative array
+    FOR rec IN (SELECT co.id_comanda, SUM(cc.pret) AS total 
+                FROM Comenzi co
+                JOIN comanda_contine_carti cc ON co.id_comanda = cc.id_comanda
+                WHERE co.id_client = v_id_client
+                GROUP BY co.id_comanda) 
+    LOOP
+        v_total_comenzi(rec.id_comanda) := rec.total;
+    END LOOP;
+    
+    -- colectam editurile unice intr-un nested table
+    SELECT DISTINCT e.nume_editura BULK COLLECT INTO v_edituri
+    FROM Editura e
+    JOIN Carti c ON e.id_editura = c.id_editura
+    JOIN comanda_contine_carti cc ON c.id_carte = cc.id_carte
+    JOIN Comenzi co ON cc.id_comanda = co.id_comanda
+    WHERE co.id_client = v_id_client;
+    
+    -- afisam lista cartilor comandate
+    DBMS_OUTPUT.PUT_LINE('Carti comandate de clientul ' || p_nume_client || ':');
+    FOR i IN 1 .. v_carti.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE(' - ' || v_carti(i));
+    END LOOP;
+    
+    -- afisam totalul comenzilor
+    DBMS_OUTPUT.PUT_LINE('Totalul comenzilor plasate:');
+    FOR i IN v_total_comenzi.FIRST .. v_total_comenzi.LAST LOOP
+        IF v_total_comenzi.EXISTS(i) THEN
+            DBMS_OUTPUT.PUT_LINE(' - Comanda ' || i || ': ' || v_total_comenzi(i) || ' RON');
+        END IF;
+    END LOOP;
+    
+    -- afisam lista editurilor
+    DBMS_OUTPUT.PUT_LINE('Edituri de la care s-au comandat carti:');
+    FOR i IN 1 .. v_edituri.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE(' - ' || v_edituri(i));
+    END LOOP;
+    
+END analiza_comenzi_client;
+/
+
+BEGIN
+    analiza_comenzi_client('Stefan');
+END;
+/
+
+  
+–Cerinta 7
+
+
+SET SERVEROUTPUT ON;
+CREATE OR REPLACE PROCEDURE cursor_carti(v_id_editura NUMBER)IS
+
+CURSOR c_editura IS  --cursorul principal
+    SELECT id_editura, nume_editura
+    FROM Editura --selecteaza id_editura si nume_editura din tabelul Editura
+    WHERE id_editura=v_id_editura ;
+    
+ 
+CURSOR c_carti(p_id_editura Editura.id_editura%TYPE) IS --cursorul parametrizat, are ca parametru p_id_editura
+    SELECT DISTINCT c.titlu, a.pret, c.limba   --selecteaza titlul si pretul pentru fiecare carte din tabelul Carti si Articol
+    FROM Carti c                      
+    JOIN comanda_contine_carti a ON c.id_carte = a.id_carte
+    WHERE c.id_editura = p_id_editura;  --filtreaza cartile pentru care id_editura din tabelul Carti este egal cu valoarea parametrului p_id_editura
+    
+    v_editura_id Editura.id_editura%TYPE;  --variabila folosita pentru a stoca id-ul editurii
+    v_editura_nume Editura.nume_editura%TYPE; --variabila folosita pentru a stoca numele editurii
+    
+    
+BEGIN
+
+   FOR r_editura IN c_editura LOOP --folosind cursorul principal itereaza prin edituri
+    v_editura_id := r_editura.id_editura; --asigneaza variabilelor valorile
+     v_editura_nume := r_editura.nume_editura;
+     
+     DBMS_OUTPUT.PUT_LINE('Editura' || ' ' || v_editura_nume); --afiseaza numele editurii
+    
+    FOR r_carti IN c_carti(v_editura_id) LOOP --itereaza prin cartile din editura curenta si foloseste ca parametru id-ul editurii curente
+         DBMS_OUTPUT.PUT_LINE('  Titlu: ' || r_carti.titlu || ', Pret: ' || r_carti.pret); --afiseaza titlul si pretul cartilor corespunzatoare
+        END LOOP;
+        
+        DBMS_OUTPUT.PUT_LINE('------------------------'); 
+    END LOOP;
+
+END cursor_carti;
+/
+ execute cursor_carti(1501);
+/
+execute cursor_carti(1504);
+/
+–Cerinta 8
+
+
+
+    -- obtinem ID-ul clientului
+    SELECT id_client
+    INTO v_client_id
+    FROM Clienti
+    WHERE nume_client = p_nume_client;
+
+    -- calculam valoarea totala a comenzilor clientului intr-o singura interogare SQL
+    SELECT COALESCE(SUM(cc.pret), 0)
+    INTO v_total
+    FROM Clienti c
+    JOIN Comenzi co ON c.id_client = co.id_client
+    JOIN Comanda_contine_carti cc ON co.id_comanda = cc.id_comanda
+    WHERE c.nume_client = p_nume_client;
+
+    -- returnam valoarea totala a comenzilor
+    RETURN v_total;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: clientul "' || p_nume_client || '" nu exista.');
+        RETURN 0;
+
+    WHEN TOO_MANY_ROWS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: exista mai multi clienti cu numele "' || p_nume_client || '".');
+        RETURN 0;
+
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare neasteptata: ' || SQLERRM);
+        RETURN NULL;
+END valoare_totala_comenzi;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Valoarea totala a comenzilor pentru Mihailescu: ' || valoare_totala_comenzi('Mihailescu') || ' RON'); –cazul cand clientul exista
+END;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Valoarea totala a comenzilor pentru Dobromirescu: ' || valoare_totala_comenzi('Dobromirescu')); –cazul cand clientul nu exista in baza de date
+END;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Valoarea totala a comenzilor pentru Lungu: ' || valoare_totala_comenzi('Lungu')); –cazul cand numele clientului apare de mai multe ori
+END;
+
+
+–Cerinta 9
+
+
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE PROCEDURE verificare_comanda(
+    p_id_comanda IN Comenzi.id_comanda%TYPE,  -- id-ul comenzii
+    p_id_client IN Clienti.id_client%TYPE     -- id-ul clientului
+) IS
+    -- variabile pentru informatiile despre client si comanda
+    v_nume_client Clienti.nume_client%TYPE;
+    v_prenume_client Clienti.prenume_client%TYPE;
+    v_adresa Adresa.adresa%TYPE;
+    v_data_comenzii Comenzi.data_comenzii%TYPE;
+
+    -- colectii pentru cartile comandate
+    TYPE t_titlu_carti IS TABLE OF Carti.titlu%TYPE;
+    TYPE t_editura IS TABLE OF Editura.nume_editura%TYPE;
+    TYPE t_pret IS TABLE OF Comanda_contine_carti.pret%TYPE;
+    
+    v_titluri_carti t_titlu_carti;
+    v_edituri t_editura;
+    v_preturi t_pret;
+
+    -- verificam existenta comenzii
+    v_count NUMBER;
+
+    -- definim exceptiile personalizate
+    ex_comanda_neexistenta EXCEPTION; --exceptia daca comanda nu exista
+    ex_comanda_fara_produse EXCEPTION; --comanda este in baza de date, dar nu are nicio carte
+
+BEGIN
+    -- Verificam daca exista comanda
+    SELECT COUNT(*) INTO v_count
+    FROM Comenzi
+    WHERE id_comanda = p_id_comanda AND id_client = p_id_client;
+
+    -- Daca nu exista, declansam exceptia personalizata
+    IF v_count = 0 THEN
+        RAISE ex_comanda_neexistenta;
+    END IF;
+
+    -- Preluam informatiile unice ale comenzii (client, adresa, data)
+    SELECT c.nume_client, c.prenume_client, a.adresa, co.data_comenzii
+    INTO v_nume_client, v_prenume_client, v_adresa, v_data_comenzii
+    FROM Comenzi co
+    JOIN Clienti c ON co.id_client = c.id_client
+    JOIN Adresa a ON co.id_adresa = a.id_adresa
+    WHERE co.id_comanda = p_id_comanda;
+
+
+    SELECT ca.titlu, e.nume_editura, cc.pret
+    BULK COLLECT INTO v_titluri_carti, v_edituri, v_preturi
+    FROM Comanda_contine_carti cc
+    JOIN Carti ca ON cc.id_carte = ca.id_carte
+    JOIN Editura e ON ca.id_editura = e.id_editura
+    WHERE cc.id_comanda = p_id_comanda;
+
+    -- Daca nu avem carti in comanda, declansam exceptia
+    IF v_titluri_carti.COUNT = 0 THEN
+        RAISE ex_comanda_fara_produse;
+    END IF;
+
+    -- Afisam informatiile despre comanda
+    DBMS_OUTPUT.PUT_LINE('Client: ' || v_nume_client || ' ' || v_prenume_client);
+    DBMS_OUTPUT.PUT_LINE('Adresa livrarii: ' || v_adresa);
+    DBMS_OUTPUT.PUT_LINE('Data comenzii: ' || TO_CHAR(v_data_comenzii, 'DD-MON-YYYY'));
+    DBMS_OUTPUT.PUT_LINE('Cartile din comanda: ');
+
+    -- Afisam lista cartilor comandate si editura lor
+    FOR i IN 1..v_titluri_carti.COUNT LOOP
+        DBMS_OUTPUT.PUT_LINE('   - ' || v_titluri_carti(i) || ' (Editura: ' || v_edituri(i) || ') - Pret: ' || v_preturi(i) || ' RON');
+    END LOOP;
+
+EXCEPTION
+    -- Tratam exceptia pentru comenzi inexistente
+    WHEN ex_comanda_neexistenta THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: comanda cu ID-ul ' || p_id_comanda || ' nu exista pentru clientul specificat.');
+
+    -- Tratam exceptia pentru comenzi fara carti
+    WHEN ex_comanda_fara_produse THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare: comanda cu ID-ul ' || p_id_comanda || ' nu contine carti.');
+
+    -- Tratam orice alta eroare SQL
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Eroare neasteptata: ' || SQLERRM);
+END verificare_comanda;
+/
+
+
+BEGIN
+    verificare_comanda(6000, 2003);
+END;
+/
+
+BEGIN
+    verificare_comanda(9999, 2001);
+END;
+/
+BEGIN
+    verificare_comanda(6007, 2003);
+END;
+/
+
+
+–Cerinta 10
+
+
+CREATE OR REPLACE TRIGGER stergere_angajat
+BEFORE DELETE ON Autor
+FOR EACH ROW
+BEGIN
+ RAISE_APPLICATION_ERROR(-20001, 'Stergerea informatiilor despre autori este interzisa!');
+ END;
+ /
+ DELETE FROM Autor WHERE id_autor=104;
+
+
+–Cerinta 11
+
+
+CREATE OR REPLACE TRIGGER actualizare_nr_pagini
+BEFORE UPDATE OF nr_pagini ON Carti
+FOR EACH ROW
+BEGIN
+  IF :NEW.nr_pagini != :OLD.nr_pagini THEN
+    RAISE_APPLICATION_ERROR(-20003, 'Actualizarea numarului de pagini cu aceasta valoare este interzisa!');
+  END IF;
+END;
+/
+
+
+UPDATE Carti
+SET nr_pagini= 200
+WHERE id_carte = 7;
+
+
+–Cerinta 12
+
+
+DROP TABLE jurnal_stergeri;
+CREATE TABLE jurnal_stergeri (
+
+
+    operatiune VARCHAR2(50),
+    tabela VARCHAR2(50),
+    data_operatiunii DATE
+
+
+);
+
+
+CREATE OR REPLACE TRIGGER trg_jurnal_stergeri
+BEFORE DROP ON SCHEMA
+BEGIN
+    IF ORA_DICT_OBJ_TYPE = 'TABLE' THEN
+        INSERT INTO jurnal_stergeri ( operatiune, tabela, data_operatiunii)
+        VALUES ('DROP TABLE', ORA_DICT_OBJ_NAME, SYSDATE);
+    END IF;
+END;
+/
+
+
+DROP TABLE Autor CASCADE CONSTRAINTS;
+DROP TABLE Articol CASCADE CONSTRAINTS;
+DROP TABLE Editura CASCADE CONSTRAINTS;
+
+
+SELECT * FROM jurnal_stergeri;
+
+
+ROLLBACK;
+
+
+/
+
+
+DROP TRIGGER trg_jurnal_stergeri;
